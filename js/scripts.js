@@ -6,6 +6,8 @@ const bookList = document.getElementById('book-list');
 // events
 formSubmit.addEventListener('submit', handleSubmit);
 bookList.addEventListener('click', handleRemove);
+document.addEventListener("DOMContentLoaded", getBookList);
+
 
 
 
@@ -23,6 +25,7 @@ function handleSubmit(e) {
 
     const book = new Book(title, author, isbn);
 
+
     // create ui
     const tr = document.createElement('tr');
     const list = `
@@ -36,10 +39,11 @@ function handleSubmit(e) {
 
     showWarning('New Book Added', 'success');
 
-    setInputValue('title','');
-    setInputValue('author','');
-    setInputValue('isbn','');
+    setInputValue('title', '');
+    setInputValue('author', '');
+    setInputValue('isbn', '');
 
+    saveToLocalStorage(book);
 }
 
 
@@ -82,5 +86,61 @@ function showWarning(message, warnClass) {
 function handleRemove(e) {
     if (e.target.hasAttribute('href')) {
         e.target.parentNode.parentNode.remove();
+        removeFromLocalStorage(e);
     }
+}
+
+// save to local Storage
+
+function saveToLocalStorage(books) {
+    let bookListArray;
+    if (localStorage.getItem('bookList') === null) {
+        bookListArray = [];
+    } else {
+        bookListArray = JSON.parse(localStorage.getItem('bookList'));
+
+    }
+    bookListArray.push(books);
+    localStorage.setItem('bookList', JSON.stringify(bookListArray));
+}
+
+
+// get book list
+function getBookList() {
+    let bookListArray;
+    if (localStorage.getItem('bookList') === null) {
+        bookListArray = [];
+    } else {
+        bookListArray = JSON.parse(localStorage.getItem('bookList'));
+    }
+
+    bookListArray.forEach(book => {
+        // create ui
+        const tr = document.createElement('tr');
+        const list = `
+            <th>${book.title}</th>
+            <th>${book.author}</th>
+            <th>${book.isbn}</th>
+            <th><a href="#">X</a></th>`;
+        tr.innerHTML = list;
+        bookList.appendChild(tr);
+    });
+}
+
+// remove from local storage
+
+function removeFromLocalStorage(e) {
+    let bookListArray;
+    if (localStorage.getItem('bookList') === null) {
+        bookListArray = [];
+    } else {
+        bookListArray = JSON.parse(localStorage.getItem('bookList'));
+    }
+    const resBookList = bookListArray.filter(book => {
+        const targetIsbn = e.target.parentElement.previousElementSibling.textContent.trim();
+        return book.isbn !== targetIsbn;
+    });
+    localStorage.setItem('bookList', JSON.stringify(resBookList));
+
+
 }
